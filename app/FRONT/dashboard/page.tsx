@@ -60,6 +60,7 @@ export default function DashboardPage() {
           สวัสดี {user.name ?? "ผู้ใช้"}
         </h1>
         <p className="text-gray-700 text-lg">คุณได้เข้าสู่ระบบสำเร็จแล้ว</p>
+        <p>ยินดีต้อนสู่ ระบบร้ายแรงของเรา!</p>
         <button
           type="button"
           onClick={handleLogout}
