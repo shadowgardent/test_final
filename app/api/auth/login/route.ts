@@ -6,7 +6,8 @@ import { dbConnect } from "@/app/lib/db";
 import { User } from "@/app/models/user";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { sign, type SignOptions } from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
+import { getJwtExpires } from "@/app/api/utils/jwt";
 
 const schema = z.object({
   email: z.string().email("invalid email"),
@@ -38,12 +39,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-    // ✅ ใช้ user แทน doc
     const token = sign(
-      { _id: user._id.toString(), email: user.email },
-      process.env.JWT_SECRET!,
-      { expiresIn: (process.env.JWT_EXPIRES as SignOptions["expiresIn"]) || "7d" }
-    );
+  { _id: user._id.toString(), email: user.email },
+  process.env.JWT_SECRET!,                 // แน่ใจว่ามีค่า
+  { expiresIn: getJwtExpires() }           // ✅ ไม่พึ่งพา SignOptions
+);
 
     const publicUser = {
       _id: user._id.toString(),
