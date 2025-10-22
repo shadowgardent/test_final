@@ -1,4 +1,6 @@
 // app/api/auth/login/route.ts
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/app/lib/db";
 import { User } from "@/app/models/user";
@@ -14,6 +16,7 @@ const schema = z.object({
 export async function POST(req: Request) {
   try {
     await dbConnect();
+
     const json = await req.json();
     const parsed = schema.safeParse(json);
     if (!parsed.success) {
@@ -32,19 +35,14 @@ export async function POST(req: Request) {
 
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
-      return NextResponse.json(
-        { message: "Invalid credentials" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
+    // ✅ ใช้ user แทน doc
     const token = sign(
       { _id: user._id.toString(), email: user.email },
-      process.env.JWT_SECRET!, // ใส่ ! เพราะเรามั่นใจว่ามีค่า
-      {
-        expiresIn:
-          (process.env.JWT_EXPIRES as SignOptions["expiresIn"]) || "7d",
-      }
+      process.env.JWT_SECRET!,
+      { expiresIn: (process.env.JWT_EXPIRES as SignOptions["expiresIn"]) || "7d" }
     );
 
     const publicUser = {
@@ -55,12 +53,9 @@ export async function POST(req: Request) {
       updatedAt: user.updatedAt.toISOString(),
     };
 
-    return NextResponse.json(
-      { message: "Logged in", user: publicUser, token },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Logged in", user: publicUser, token }, { status: 200 });
   } catch (err) {
-    console.error(err);
+    console.error("[LOGIN_ERROR]", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
