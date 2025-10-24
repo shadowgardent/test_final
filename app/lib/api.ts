@@ -44,3 +44,34 @@ export async function apiUsers(params?: { q?: string; page?: number; limit?: num
   if (!res.ok) throw new Error((await res.json()).message || "Fetch users failed");
   return res.json() as Promise<{ users: any[]; page: number; pages: number; total: number }>;
 }
+
+export async function apiUpdateUser(
+  id: string,
+  data: { name?: string; email?: string; password?: string }
+) {
+  const token = getToken();
+  if (!token) throw new Error("Missing token");
+
+  const res = await fetch(`${BASE}/api/auth/users/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error((await res.json()).message || "Update user failed");
+  return res.json() as Promise<{ message: string; user: any }>;
+}
+
+export async function apiDeleteUser(id: string) {
+  const token = getToken();
+  if (!token) throw new Error("Missing token");
+
+  const res = await fetch(`${BASE}/api/auth/users/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error((await res.json()).message || "Delete user failed");
+  return res.json() as Promise<{ message: string }>;
+}
